@@ -1,0 +1,13 @@
+# Copy this file to .gitleaks.toml (gitignored) and fill in your own
+# personal-domain pattern. .gitleaks.toml is never committed — the real
+# regex would itself disclose the thing it's meant to protect.
+
+[extend]
+useDefault = true
+
+# Example only — replace with your own domain before using locally.
+[[rules]]
+id          = "personal-domain-leak"
+description = "Blocks references to a personal domain (any subdomain)"
+regex       = '''(?i)([a-z0-9-]+\.)*example\.com'''
+tags        = ["personal", "domain"]

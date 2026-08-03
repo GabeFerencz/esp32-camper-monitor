@@ -1,0 +1,6 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.2   # check for a newer tag periodically; gitleaks is in
+                    # maintenance mode (security patches only) as of 2026
+    hooks:
+      - id: gitleaks

@@ -1,0 +1,27 @@
+# ESP-IDF build artifacts
+build/
+managed_components/
+dependencies.lock
+sdkconfig.old
+
+# Keep sdkconfig.defaults tracked; ignore the generated local sdkconfig
+# so per-machine build quirks don't get committed.
+sdkconfig
+
+# Secrets — never tracked. Use secrets.h.example as the template.
+main/secrets.h
+
+# Personal infra details — never tracked. Use the .example files as templates.
+.gitleaks.toml
+CLAUDE.local.md
+
+# Editor / OS cruft
+.vscode/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# gitleaks report output, if generated locally
+gitleaks-report.json
