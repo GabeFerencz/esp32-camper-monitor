@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  host-tests:
+    name: Host tests (linux target)
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.0.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libbsd-dev (required for the linux host target)
+        run: apt-get update && apt-get install -y libbsd-dev
+
+      - name: Build and run ac_presence host tests
+        working-directory: components/ac_presence/host_test
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py --preview set-target linux build
+          ./build/ac_presence_debounce_test.elf
+
+  build-esp32:
+    name: esp32 build (compile-only)
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.0.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build firmware for esp32 target
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py set-target esp32
+          idf.py build
