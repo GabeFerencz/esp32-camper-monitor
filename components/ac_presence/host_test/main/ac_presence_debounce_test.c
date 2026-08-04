@@ -54,7 +54,8 @@ TEST(ac_presence_debounce, clean_transition)
     // Window elapses exactly here (stable since t=2000, debounce=10000).
     TEST_ASSERT_TRUE(ac_presence_debounce_process(&db, false, 12000));
     TEST_ASSERT_EQUAL(1, s_spy.call_count);
-    TEST_ASSERT_EQUAL(AC_PRESENCE_LOST, s_spy.states[0]);
+    // DELIBERATELY BROKEN for issue #4 CI-gate verification — revert before merge.
+    TEST_ASSERT_EQUAL(AC_PRESENCE_PRESENT, s_spy.states[0]);
     TEST_ASSERT_EQUAL_PTR(&dummy_ctx, s_spy.ctxs[0]);
     TEST_ASSERT_EQUAL(AC_PRESENCE_LOST, db.state);
 
