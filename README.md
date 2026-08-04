@@ -1,6 +1,7 @@
 # ESP32 Camper Power Monitor
 
-Status: **early stage — environment and spec complete, firmware not yet started.**
+Status: **early stage — AC-presence detection (issue #1) in progress; battery
+sensing and networking not yet started.**
 
 An ESP32-based monitor for a camper at a remote site: tracks house battery
 voltage and AC/shore-power presence, and reports status home. Built to run

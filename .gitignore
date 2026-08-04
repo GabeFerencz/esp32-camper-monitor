@@ -25,3 +25,6 @@ __pycache__/
 
 # gitleaks report output, if generated locally
 gitleaks-report.json
+
+# This is covered by my global gitignore, but in case it's not for someone else:
+.claude/settings.local.json
