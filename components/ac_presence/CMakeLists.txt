@@ -1,2 +1,3 @@
-idf_component_register(SRCS "ac_presence_debounce.c"
-                        INCLUDE_DIRS ".")
+idf_component_register(SRCS "ac_presence_debounce.c" "ac_presence_gpio.c"
+                        INCLUDE_DIRS "."
+                        PRIV_REQUIRES esp_driver_gpio)

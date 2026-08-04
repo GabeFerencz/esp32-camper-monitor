@@ -1,0 +1,4 @@
+# Board profile: ESP32-WROOM-32 DEVKITV1, 4MB flash, Boya flash chip.
+# See CLAUDE.md for why these are pinned rather than left at IDF default.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_SPI_FLASH_SUPPORT_BOYA_CHIP=y
