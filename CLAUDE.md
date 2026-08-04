@@ -61,6 +61,30 @@ quality as things a potential client or employer may actually read.
    out-of-cycle report — never wait for the next periodic cycle. Heartbeats
    are separate from event alerts; both matter.
 
+## Autonomy vs. review
+Local, reversible work — reading, building, testing, editing files,
+committing — proceed on your own judgment without checking in at each
+step. I trust you the way I'd trust a competent colleague: expected to
+try to do the right thing, understood to occasionally get something
+wrong.
+
+Anything reaching GitHub needs my review first: pushes, PR or issue
+creation, merges, and any issue/PR edit that adds new written content.
+Toggling an already-agreed checkbox in an issue body is fine on your own
+judgment; rewriting the surrounding text is not.
+
+Why: this repo is public, and it's already had a real near-miss with
+personal infrastructure details landing in a tracked file (see constraint
+2 above). Automated tooling catches credential-shaped secrets well, but a
+plain hostname or a personal detail described in prose doesn't look like
+a "secret" to a pattern scanner — that's the gap a human check closes.
+
+I've found `settings.local.json`'s enforcement inconsistent in practice,
+so treat this note as the real checkpoint, not the permission file —
+tell me plainly what's about to reach GitHub and why, even if a technical
+rule would currently let it through silently. When genuinely unsure
+whether something needs my review, ask rather than guess.
+
 ## Workflow preference
 Use plan mode for anything beyond a trivial fix — draft the approach against
 the relevant `SPEC.md` section first, wait for approval, then implement.
