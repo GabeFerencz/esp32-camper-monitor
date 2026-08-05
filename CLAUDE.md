@@ -15,11 +15,13 @@ quality as things a potential client or employer may actually read.
 - ESP-IDF v6.0.2, sourced via `get_idf` (WSL2)
 - Build/flash:
   ```
-  cp secrets.h.example main/secrets.h   # first time only, then fill in values
   idf.py set-target esp32
   idf.py build
   idf.py -p /dev/ttyUSB0 flash monitor
   ```
+  No secrets file to copy first — WiFi/CF-Access/phone-home config is
+  provisioned at runtime over the serial console (see SPEC.md's
+  Provisioning section), never compiled into firmware.
 - Board profile (4MB flash, Boya flash chip) — apply via
   `sdkconfig.defaults`, don't rediscover these warnings on every new build:
   ```
@@ -32,19 +34,27 @@ quality as things a potential client or employer may actually read.
 1. **FreeRTOS-native architecture.** Real tasks with defined responsibilities
    (sensor sampling, networking, watchdog-feed, OTA-check), not a single
    Arduino-style loop. See `SPEC.md` for the task breakdown.
-2. **No credentials, hostnames, or personal infrastructure details in any
-   tracked file — ever.** This includes code, comments, commit messages,
-   and documentation/workflow write-ups (e.g. anything under `docs/`
-   describing the AI-assisted process). Real values live only in the
-   gitignored `main/secrets.h` (firmware secrets) and `CLAUDE.local.md`
-   (project/infra context — real hostnames, host names, anything specific
-   to the actual deployment). Tracked files use placeholders only:
-   `secrets.h.example`, `.gitleaks.toml.example`. If you generate example
-   output, terminal captures, or screenshots for documentation, sanitize
-   them the same way — check for real hostnames, IPs, MACs, and tokens
-   before they're written to a tracked file. If you need a real
-   infrastructure detail to complete a task and it isn't in
-   `CLAUDE.local.md`, ask rather than guess or invent one.
+2. **No device credentials in any tracked *or* untracked file — ever.**
+   Firmware secrets (WiFi SSID/password, Cloudflare Access service token,
+   phone-home hostname) are provisioned at runtime into NVS over a serial
+   console (see SPEC.md's Provisioning section) — never written to disk
+   in any form, gitignored or not. This is deliberate, not just
+   `.gitignore` discipline: Claude Code has read access to the working
+   directory, so a gitignored file only keeps a secret off GitHub, not out
+   of the AI agent's context.
+
+   This is narrower than a blanket "no personal infrastructure details"
+   rule — `CLAUDE.local.md` may still hold real infra context for
+   not-yet-built *server*-side work (phone-home host/port/tunnel details),
+   but must never be read from or written into firmware source, code,
+   comments, commit messages, or any tracked documentation/workflow
+   write-up (e.g. anything under `docs/` describing the AI-assisted
+   process). If you generate example output, terminal captures, or
+   screenshots for documentation, sanitize them the same way — check for
+   real hostnames, IPs, MACs, and tokens before they're written to a
+   tracked file. If you need a real infrastructure detail to complete a
+   task and it isn't in `CLAUDE.local.md`, ask rather than guess or invent
+   one.
 3. **Reliability requirements are non-negotiable, not aspirational** — this
    device runs unattended at a site with no guaranteed physical access:
    - Hardware watchdog enabled, fed only by a dedicated health-check task

@@ -23,6 +23,13 @@ jobs:
           idf.py --preview set-target linux build
           ./build/ac_presence_debounce_test.elf
 
+      - name: Build and run provisioning host tests
+        working-directory: components/provisioning/host_test
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py --preview set-target linux build
+          ./build/provisioning_validate_test.elf
+
   build-esp32:
     name: esp32 build (compile-only)
     runs-on: ubuntu-latest
