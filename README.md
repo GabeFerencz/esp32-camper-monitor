@@ -24,29 +24,52 @@ Cloudflare Tunnel + Access, isolated from other services on the same host).
 ## Building
 ```bash
 get_idf                         # or: source /path/to/esp-idf/export.sh
-cp secrets.h.example main/secrets.h   # then fill in your own values
 idf.py set-target esp32
 idf.py build
 idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-`main/secrets.h` is gitignored — it holds WiFi credentials and the
-Cloudflare Access service token for this project's own phone-home endpoint.
-Use `secrets.h.example` as the template.
+No credentials file to copy — see "Provisioning" below for how the device
+gets its WiFi/phone-home config.
+
+## Provisioning
+The firmware ships with no WiFi SSID, no Cloudflare Access service token,
+and no phone-home hostname anywhere in source. On boot, if that config is
+missing from NVS, the device drops into a serial-console provisioning
+mode over the same USB/UART connection `idf.py monitor` already uses:
+
+```bash
+idf.py -p /dev/ttyUSB0 monitor
+# at the "provisioning>" prompt:
+set-wifi <ssid> <password>
+set-cf-token <client-id> <client-secret>
+set-host <hostname>
+show      # confirm the values (password/secret are masked)
+commit    # validates and reboots into normal operation
+```
+
+**Re-provisioning** an already-deployed device (new WiFi network, rotated
+token) doesn't need a rebuild or reflash — erase just the NVS partition to
+force the device back into provisioning mode on next boot:
+
+```bash
+python $IDF_PATH/components/partition_table/parttool.py \
+    -p /dev/ttyUSB0 erase_partition --partition-name=nvs
+```
 
 ## A note on the repo's security setup
 This repo intentionally documents its own security practices as part of the
 learning goal above:
-- Credentials are never committed — see `secrets.h.example` for the pattern.
+- No device-specific secret (WiFi credentials, Cloudflare Access service
+  token, phone-home hostname) exists in any file in this repo, tracked or
+  untracked, at any point — see "Provisioning" above. This is a deliberate
+  choice, not just `.gitignore` discipline: Claude Code (used throughout
+  this project's development, see below) has read access to the working
+  directory, so a gitignored file only keeps a secret off GitHub, not out
+  of the AI agent's context. Removing the secret from the filesystem
+  entirely closes that gap instead of trying to fence off part of it.
 - A pre-commit [gitleaks](https://github.com/gitleaks/gitleaks) hook blocks
-  credential-shaped secrets automatically.
-- Personal infrastructure details (real hostnames, the phone-home domain)
-  are kept out of this repo entirely — not just the credentials that point
-  at them. `.gitleaks.toml.example` and `CLAUDE.local.md`'s absence here
-  (it's gitignored) are both part of that: a plain hostname isn't
-  credential-shaped, so a generic scanner won't catch it on its own, and
-  the fix is keeping it out of tracked files rather than trying to scan
-  for it after the fact.
+  credential-shaped secrets automatically, as a general safety net.
 
 ## License
 MIT — see [`LICENSE`](./LICENSE).

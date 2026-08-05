@@ -91,16 +91,39 @@ assumption of physical access after initial install.
   the ESP32 is headless and can't do an interactive auth flow). Firmware
   sends `CF-Access-Client-Id` / `CF-Access-Client-Secret` as headers on
   every request.
-- **No real hostnames, service names, or infrastructure details appear in
-  this repo, in commit messages, or in any documentation here.** Real
-  values live only in the gitignored `secrets.h` (firmware) and
-  `CLAUDE.local.md` (project context). `secrets.h.example` shows the
-  pattern with a placeholder (`your-endpoint.example.com`).
-- **Defense specific to this leak category:** a generic secret scanner
-  catches credential-shaped strings but won't reliably flag a plain
-  hostname. `.gitleaks.toml.example` shows the pattern for a personal
-  rule; the real, gitignored `.gitleaks.toml` fills in the actual value
-  locally, so it's never committed either.
+- **No device-specific secret (WiFi credentials, CF Access service token,
+  phone-home hostname) exists in any file, tracked or untracked, at any
+  point.** Rather than compiling credentials into firmware and relying on
+  `.gitignore`/secret-scanning discipline to keep them off GitHub, the
+  device is provisioned at runtime: on boot, if required config is
+  missing from NVS, it drops into a blocking `esp_console` REPL over the
+  same USB/UART connection `idf.py monitor` already uses. No new hardware
+  or transport. See "Provisioning" below for the schema and flow. Project
+  context that isn't a firmware secret (real host/port/tunnel details for
+  the *server* side) still lives in the gitignored `CLAUDE.local.md`.
+
+### Provisioning
+- **NVS namespace:** `provision`. Fields (all plain strings, `nvs_get_str`/
+  `nvs_set_str`): `wifi_ssid`, `wifi_pass`, `cf_id` (CF Access client ID),
+  `cf_secret` (CF Access client secret), `phone_host` (no URL scheme
+  prefix — firmware builds the request URL itself).
+- **Trigger:** at boot, after `nvs_flash_init()`, the device checks
+  whether all five fields are present and non-empty. If not, it starts
+  the provisioning console and blocks there — provisioning mode and
+  normal operation never run in the same boot.
+- **Console commands:** `set-wifi <ssid> <password>`, `set-cf-token
+  <client-id> <client-secret>`, `set-host <hostname>`, `show` (prints
+  current values, masking the password and client secret), `commit`
+  (validates completeness, then reboots into normal operation).
+- **Re-provisioning** (new WiFi network, rotated token) doesn't require a
+  rebuild/reflash: erase just the NVS partition (`parttool.py
+  erase_partition --partition-name=nvs`) to force the device back into
+  provisioning mode on next boot, then run the console flow again.
+- **NVS partition is separate from `ota_0`/`ota_1`/`otadata`** in the
+  default partition table, so provisioned values are expected to survive
+  OTA updates without extra work — a design expectation, not yet tested,
+  since OTA doesn't exist in this project yet. Verification rides along
+  with the OTA checkpoint below once that work starts.
 - Must support: immediate event alerts, periodic heartbeats, and
   heartbeat-silence detection on the receiving side (see above)
 - Must tolerate the local-buffering behavior above (delayed/batched
@@ -118,12 +141,15 @@ assumption of physical access after initial install.
 - [ ] Battery voltage and AC-presence both read reliably on real hardware
 - [ ] Phone-home endpoint live on personal infrastructure, isolated from
       other services on the same host (separate service, port, database)
-- [ ] Personal gitleaks rule in place locally and verified (deliberately
-      try to commit the real hostname, confirm the hook blocks it)
+- [ ] Provisioning console tested end-to-end (enter WiFi/CF-token/host via
+      `set-wifi`/`set-cf-token`/`set-host`, `commit`, confirm it reboots
+      and reconnects using the provisioned values)
+- [ ] Confirmed no credential, hostname, or token appears in any tracked
+      or untracked file in the repo
 - [ ] Status reported successfully to the endpoint over the private
       cellular WiFi, authenticated via Cloudflare Access service token
 - [ ] Survives a WiFi drop/reconnect with no manual intervention
 - [ ] OTA update pushed successfully; rollback deliberately tested (push a
       broken build, confirm auto-rollback recovers it) *before* first field
-      install
+      install (confirm NVS-provisioned config also survives this test)
 - [ ] README documents the AI-augmented workflow used to build it

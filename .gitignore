@@ -8,11 +8,8 @@ sdkconfig.old
 # so per-machine build quirks don't get committed.
 sdkconfig
 
-# Secrets — never tracked. Use secrets.h.example as the template.
-main/secrets.h
-
-# Personal infra details — never tracked. Use the .example files as templates.
-.gitleaks.toml
+# Personal infra details — never tracked (server-side context only; no
+# firmware secrets live in any file — see CLAUDE.md constraint #2).
 CLAUDE.local.md
 
 # Editor / OS cruft
