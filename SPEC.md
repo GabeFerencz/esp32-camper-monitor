@@ -75,32 +75,47 @@ assumption of physical access after initial install.
   covers this without the added complexity and unreliability.
 
 ## Phone-home
-- **Host:** self-hosted on existing personal infrastructure (a home server
-  already running a Cloudflare Tunnel) — reuses proven infra rather than
-  standing up something new. Specific host and domain details are kept out
-  of this repo — see `CLAUDE.local.md` (gitignored) for the real values.
-- **Isolation from other services on the same host:** separate systemd
-  service, separate local port, separate SQLite database file. No shared
-  state or shared failure surface with anything else already running
-  there.
-- **Transport:** a dedicated subdomain added as an additional Cloudflare
-  Tunnel ingress rule + DNS record. Existing routes on the same tunnel are
-  untouched — purely additive.
+See [`docs/adr/0001-phone-home-transport.md`](docs/adr/0001-phone-home-transport.md)
+for the full reasoning behind this design, alternatives considered, and why
+they were rejected. This section states the decision as it applies to
+firmware behavior.
+
+- **Transport:** a plain HTTPS POST from the ESP32 to a webhook trigger on
+  a home-automation platform (Home Assistant) already running on existing
+  personal infrastructure — reuses proven infra rather than standing up a
+  new receiver. Specific host, domain, and webhook path are kept out of
+  this repo — see `CLAUDE.local.md` (gitignored) for the real values.
+- **Routing:** the existing self-hosted Cloudflare Tunnel already in use
+  for other services on the same host — a dedicated subdomain added as an
+  additional Tunnel ingress rule + DNS record. Existing routes on the same
+  tunnel are untouched — purely additive.
 - **Auth:** dedicated Cloudflare Access application for the new subdomain,
   using a **Service Auth policy + Service Token** (not browser/SSO login —
   the ESP32 is headless and can't do an interactive auth flow). Firmware
   sends `CF-Access-Client-Id` / `CF-Access-Client-Secret` as headers on
-  every request.
+  every request. Unchanged from the prior design.
+- **MQTT is not used on the WAN leg.** It is used locally: the Home
+  Assistant automation that receives the webhook republishes parsed state
+  to the local MQTT broker already running there, so any future local
+  consumer (dashboard, other automations, a future local-only sensor) can
+  subscribe without depending on the webhook path at all. The firmware
+  itself has no MQTT involvement — it only ever POSTs to the webhook. See
+  the ADR for why MQTT was rejected for the WAN leg specifically.
 - **No device-specific secret (WiFi credentials, CF Access service token,
-  phone-home hostname) exists in any file, tracked or untracked, at any
-  point.** Rather than compiling credentials into firmware and relying on
-  `.gitignore`/secret-scanning discipline to keep them off GitHub, the
-  device is provisioned at runtime: on boot, if required config is
-  missing from NVS, it drops into a blocking `esp_console` REPL over the
-  same USB/UART connection `idf.py monitor` already uses. No new hardware
-  or transport. See "Provisioning" below for the schema and flow. Project
-  context that isn't a firmware secret (real host/port/tunnel details for
-  the *server* side) still lives in the gitignored `CLAUDE.local.md`.
+  phone-home hostname, webhook ID) exists in any file, tracked or
+  untracked, at any point.** Rather than compiling credentials into
+  firmware and relying on `.gitignore`/secret-scanning discipline to keep
+  them off GitHub, the device is provisioned at runtime: on boot, if
+  required config is missing from NVS, it drops into a blocking
+  `esp_console` REPL over the same USB/UART connection `idf.py monitor`
+  already uses. No new hardware or transport. See "Provisioning" below for
+  the current schema and flow. The webhook ID is a new credential this
+  transport introduces — Home Assistant's own guidance is to treat it like
+  a password — so it must extend the provisioning schema rather than be
+  hardcoded; see the ADR for that decision and the not-yet-created
+  implementation issue for the actual schema change. Project context
+  that isn't a firmware secret (real host/path details for the *receiver*
+  side) still lives in the gitignored `CLAUDE.local.md`.
 
 ### Provisioning
 - **NVS namespace:** `provision`. Fields (all plain strings, `nvs_get_str`/
