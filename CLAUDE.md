@@ -95,6 +95,25 @@ tell me plainly what's about to reach GitHub and why, even if a technical
 rule would currently let it through silently. When genuinely unsure
 whether something needs my review, ask rather than guess.
 
+## Git workflow
+Every unit of implementation work starts as a GitHub issue. Exception:
+small, non-functional companion changes with no independent scope of
+their own (e.g., a doc-only ADR write-up) may skip the issue and use a
+`docs/<slug>` branch instead — a deliberate, named exception, not a
+shortcut.
+
+Branch creation for issue-backed work always goes through
+`gh issue develop <issue-number> --checkout`, never a hand-typed branch
+name.
+
+Local work (edits, commits, builds, tests) proceeds without per-step
+check-in, per the human-review rule above. Sign-off is still required
+before: `gh issue create`, `git push`, `gh pr create`, or any issue/PR
+edit that adds new written content.
+
+PRs reference and close their issue (`Closes #N`) rather than closing the
+issue directly.
+
 ## Workflow preference
 Use plan mode for anything beyond a trivial fix — draft the approach against
 the relevant `SPEC.md` section first, wait for approval, then implement.
