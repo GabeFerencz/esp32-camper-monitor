@@ -23,5 +23,6 @@ bool provisioning_config_is_complete(const provisioning_config_t *cfg)
         && is_nonempty(cfg->wifi_pass)
         && is_nonempty(cfg->cf_client_id)
         && is_nonempty(cfg->cf_client_secret)
-        && provisioning_host_is_valid(cfg->phone_host);
+        && provisioning_host_is_valid(cfg->phone_host)
+        && is_nonempty(cfg->webhook_id);
 }

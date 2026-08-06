@@ -121,15 +121,18 @@ firmware behavior.
 - **NVS namespace:** `provision`. Fields (all plain strings, `nvs_get_str`/
   `nvs_set_str`): `wifi_ssid`, `wifi_pass`, `cf_id` (CF Access client ID),
   `cf_secret` (CF Access client secret), `phone_host` (no URL scheme
-  prefix — firmware builds the request URL itself).
+  prefix — firmware builds the request URL itself), `webhook_id` (Home
+  Assistant webhook ID — treated like a password per the ADR below, since
+  HA's own docs say anyone holding it can trigger the automation).
 - **Trigger:** at boot, after `nvs_flash_init()`, the device checks
-  whether all five fields are present and non-empty. If not, it starts
+  whether all six fields are present and non-empty. If not, it starts
   the provisioning console and blocks there — provisioning mode and
   normal operation never run in the same boot.
 - **Console commands:** `set-wifi <ssid> <password>`, `set-cf-token
-  <client-id> <client-secret>`, `set-host <hostname>`, `show` (prints
-  current values, masking the password and client secret), `commit`
-  (validates completeness, then reboots into normal operation).
+  <client-id> <client-secret>`, `set-host <hostname>`, `set-webhook
+  <webhook-id>`, `show` (prints current values, masking the password,
+  client secret, and webhook ID), `commit` (validates completeness, then
+  reboots into normal operation).
 - **Re-provisioning** (new WiFi network, rotated token) doesn't require a
   rebuild/reflash: erase just the NVS partition (`parttool.py
   erase_partition --partition-name=nvs`) to force the device back into

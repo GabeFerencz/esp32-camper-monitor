@@ -17,6 +17,7 @@ static provisioning_config_t make_complete_config(void)
     strcpy(cfg.cf_client_id, "abc123.access");
     strcpy(cfg.cf_client_secret, "supersecrethex");
     strcpy(cfg.phone_host, "subdom.example.com");
+    strcpy(cfg.webhook_id, "a1b2c3d4e5f6");
     return cfg;
 }
 
@@ -64,6 +65,13 @@ TEST(provisioning_validate, missing_cf_client_secret_is_incomplete)
     TEST_ASSERT_FALSE(provisioning_config_is_complete(&cfg));
 }
 
+TEST(provisioning_validate, missing_webhook_id_is_incomplete)
+{
+    provisioning_config_t cfg = make_complete_config();
+    cfg.webhook_id[0] = '\0';
+    TEST_ASSERT_FALSE(provisioning_config_is_complete(&cfg));
+}
+
 TEST(provisioning_validate, empty_phone_host_is_incomplete)
 {
     provisioning_config_t cfg = make_complete_config();
@@ -97,6 +105,7 @@ TEST_GROUP_RUNNER(provisioning_validate)
     RUN_TEST_CASE(provisioning_validate, missing_wifi_pass_is_incomplete);
     RUN_TEST_CASE(provisioning_validate, missing_cf_client_id_is_incomplete);
     RUN_TEST_CASE(provisioning_validate, missing_cf_client_secret_is_incomplete);
+    RUN_TEST_CASE(provisioning_validate, missing_webhook_id_is_incomplete);
     RUN_TEST_CASE(provisioning_validate, empty_phone_host_is_incomplete);
     RUN_TEST_CASE(provisioning_validate, phone_host_with_http_scheme_is_rejected);
     RUN_TEST_CASE(provisioning_validate, phone_host_with_https_scheme_is_rejected);
