@@ -114,6 +114,16 @@ edit that adds new written content.
 PRs reference and close their issue (`Closes #N`) rather than closing the
 issue directly.
 
+**Partial-scope PRs auto-close their issue too — watch for this.**
+Because branches are created via `gh issue develop`, GitHub links the
+branch to its issue, and merging closes that issue automatically. This
+happens regardless of the PR body's wording — writing "Refs #N" instead
+of "Closes #N" does *not* prevent it, since the close is driven by the
+branch link, not by closing keywords in the text. If a PR is explicitly
+a partial slice of an issue (some acceptance criteria intentionally left
+for follow-up), reopen the issue immediately after merge as a deliberate
+step — don't rely on PR phrasing to keep it open.
+
 ## Workflow preference
 Use plan mode for anything beyond a trivial fix — draft the approach against
 the relevant `SPEC.md` section first, wait for approval, then implement.
