@@ -14,9 +14,10 @@
 extern "C" {
 #endif
 
-// Placeholder capacity, sized generously for a transient outage; revisit
-// once the real heartbeat cadence (and therefore worst-case backlog) is
-// decided alongside the WiFi task that will actually drive this buffer.
+// At the 15-minute heartbeat cadence (see phone_home_task.c), 32 entries
+// covers roughly 8 hours of continuous outage before oldest-eviction
+// kicks in -- reasonable for a "transient wobble" per SPEC.md; revisit
+// if real-world outage duration proves this insufficient.
 #define PHONE_HOME_BUFFER_CAPACITY 32
 
 typedef struct {
