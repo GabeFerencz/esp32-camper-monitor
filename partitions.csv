@@ -1,0 +1,36 @@
+# Name,   Type, SubType, Offset,  Size,     Flags
+#
+# Custom table (CONFIG_PARTITION_TABLE_CUSTOM), replacing the IDF
+# default single-app table. Sized ahead of OTA/Bluetooth work per
+# issue #13 -- see that issue for the full writeup; summary below.
+#
+# Dual ota_0/ota_1 + otadata, no factory partition -- SPEC.md's OTA
+# section calls for this layout explicitly (not the single-factory
+# layout used for early bring-up), since the device flashes straight
+# into ota_0 and never needs a separate factory-only fallback image.
+#
+# Sizing on 4MB flash (WROOM-32, see sdkconfig.defaults board profile):
+#   - nvs (24KB): unchanged from the IDF default. Provisioning schema
+#     (components/provisioning/provisioning_schema.h) is 6 strings,
+#     ~800 bytes worst-case including NVS per-entry overhead; WiFi's
+#     own nvs.net80211 storage adds a handful more small entries.
+#     24KB is >20x that -- reviewed and kept, not inherited blindly.
+#   - otadata (8KB): fixed size IDF requires for OTA slot selection,
+#     not tunable.
+#   - phy_init (4KB): unchanged, standard fixed size.
+#   - ota_0 / ota_1 (1536KB each): current firmware (WiFi station +
+#     TLS + esp_http_client, no OTA, no BT) already measures ~992KB
+#     -- 97% of the old 1MB single-app partition, ~32KB free. Adding
+#     Bluetooth (NimBLE measured at ~187KB flash in a throwaway test
+#     build) would blow past 1MB entirely. 1536KB leaves ~544KB
+#     (35%) free today, and ~357KB (23%) free even after adding BT --
+#     real headroom, not a barely-fits number, in both app slots since
+#     OTA requires each to hold a full image.
+#   - Totals 36KB + 3072KB = ~3.03MB of the 4MB flash allocated;
+#     ~988KB left unpartitioned as spare rather than speculatively
+#     carved out now.
+nvs,      data, nvs,     ,        0x6000,
+otadata,  data, ota,     ,        0x2000,
+phy_init, data, phy,     ,        0x1000,
+ota_0,    app,  ota_0,   ,        1536K,
+ota_1,    app,  ota_1,   ,        1536K,

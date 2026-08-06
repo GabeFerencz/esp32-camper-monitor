@@ -8,3 +8,9 @@ CONFIG_SPI_FLASH_SUPPORT_BOYA_CHIP=y
 # endpoint. Already IDF's own default; pinned explicitly per this file's
 # convention of not relying on undocumented defaults.
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+
+# Custom partition table (see partitions.csv for the dual ota_0/ota_1
+# layout and sizing rationale) -- replaces the default single-app
+# table ahead of OTA/Bluetooth work. See issue #13.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
