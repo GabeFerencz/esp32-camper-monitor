@@ -16,6 +16,7 @@ extern "C" {
 #define PROVISIONING_KEY_CF_ID      "cf_id"
 #define PROVISIONING_KEY_CF_SECRET  "cf_secret"
 #define PROVISIONING_KEY_PHONE_HOST "phone_host"
+#define PROVISIONING_KEY_WEBHOOK_ID "webhook_id"
 
 typedef struct {
     char wifi_ssid[33];         // 802.11 SSID max is 32 bytes
@@ -23,6 +24,8 @@ typedef struct {
     char cf_client_id[128];     // Cloudflare Access service token client ID
     char cf_client_secret[128]; // Cloudflare Access service token client secret
     char phone_host[128];       // phone-home hostname, no URL scheme prefix
+    char webhook_id[128];       // Home Assistant webhook ID -- treated like a
+                                 // password per ADR 0001 / HA's own guidance
 } provisioning_config_t;
 
 #ifdef __cplusplus

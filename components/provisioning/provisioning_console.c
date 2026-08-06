@@ -33,6 +33,11 @@ static struct {
     struct arg_end *end;
 } s_host_args;
 
+static struct {
+    struct arg_str *webhook_id;
+    struct arg_end *end;
+} s_webhook_args;
+
 // Prints a value with only its last 4 characters visible, so a captured
 // terminal log (screenshot, copy-paste into an issue) can't leak the
 // full secret. Non-secret fields use print_plain_field() instead.
@@ -120,6 +125,23 @@ static int cmd_set_host(int argc, char **argv)
     return 0;
 }
 
+static int cmd_set_webhook(int argc, char **argv)
+{
+    int nerrors = arg_parse(argc, argv, (void **)&s_webhook_args);
+    if (nerrors != 0) {
+        arg_print_errors(stderr, s_webhook_args.end, argv[0]);
+        return 1;
+    }
+
+    esp_err_t err = provisioning_store_save_field(PROVISIONING_KEY_WEBHOOK_ID, s_webhook_args.webhook_id->sval[0]);
+    if (err != ESP_OK) {
+        printf("failed to save webhook ID: %s\n", esp_err_to_name(err));
+        return 1;
+    }
+    printf("webhook ID saved\n");
+    return 0;
+}
+
 static int cmd_show(int argc, char **argv)
 {
     (void)argc;
@@ -138,6 +160,7 @@ static int cmd_show(int argc, char **argv)
     print_plain_field("cf_client_id", cfg.cf_client_id);
     print_masked_field("cf_client_secret", cfg.cf_client_secret);
     print_plain_field("phone_host", cfg.phone_host);
+    print_masked_field("webhook_id", cfg.webhook_id);
     printf("  %-14s %s\n", "complete", provisioning_config_is_complete(&cfg) ? "yes" : "no");
     return 0;
 }
@@ -154,7 +177,7 @@ static int cmd_commit(int argc, char **argv)
         return 1;
     }
     if (!provisioning_config_is_complete(&cfg)) {
-        printf("config incomplete -- set-wifi, set-cf-token, and set-host must all be set (see 'show')\n");
+        printf("config incomplete -- set-wifi, set-cf-token, set-host, and set-webhook must all be set (see 'show')\n");
         return 1;
     }
 
@@ -200,6 +223,17 @@ static void register_commands(void)
         .argtable = &s_host_args,
     };
     ESP_ERROR_CHECK(esp_console_cmd_register(&set_host_cmd));
+
+    s_webhook_args.webhook_id = arg_str1(NULL, NULL, "<webhook-id>", "Home Assistant webhook ID");
+    s_webhook_args.end = arg_end(1);
+    const esp_console_cmd_t set_webhook_cmd = {
+        .command = "set-webhook",
+        .help = "Store the Home Assistant webhook ID",
+        .hint = NULL,
+        .func = &cmd_set_webhook,
+        .argtable = &s_webhook_args,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&set_webhook_cmd));
 
     const esp_console_cmd_t show_cmd = {
         .command = "show",

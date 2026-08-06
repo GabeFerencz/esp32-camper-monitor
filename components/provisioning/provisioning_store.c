@@ -32,6 +32,7 @@ esp_err_t provisioning_store_load(provisioning_config_t *out)
         { PROVISIONING_KEY_CF_ID,      out->cf_client_id,     sizeof(out->cf_client_id) },
         { PROVISIONING_KEY_CF_SECRET,  out->cf_client_secret, sizeof(out->cf_client_secret) },
         { PROVISIONING_KEY_PHONE_HOST, out->phone_host,       sizeof(out->phone_host) },
+        { PROVISIONING_KEY_WEBHOOK_ID, out->webhook_id,       sizeof(out->webhook_id) },
     };
 
     esp_err_t first_err = ESP_OK;

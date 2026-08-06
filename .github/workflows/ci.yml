@@ -30,6 +30,13 @@ jobs:
           idf.py --preview set-target linux build
           ./build/provisioning_validate_test.elf
 
+      - name: Build and run phone_home host tests
+        working-directory: components/phone_home/host_test
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py --preview set-target linux build
+          ./build/phone_home_test.elf
+
   build-esp32:
     name: esp32 build (compile-only)
     runs-on: ubuntu-latest
