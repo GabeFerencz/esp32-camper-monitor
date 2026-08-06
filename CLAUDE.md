@@ -111,6 +111,18 @@ check-in, per the human-review rule above. Sign-off is still required
 before: `gh issue create`, `git push`, `gh pr create`, or any issue/PR
 edit that adds new written content.
 
+**Commit at each verified checkpoint, not once at the end.** "No
+per-step check-in" is about not needing permission to commit — it isn't
+license to squash a whole multi-part implementation into a single commit
+once everything's done. If work is broken into discrete steps that each
+get their own build/test verification (whether tracked as a task list or
+just planned that way), commit after each one passes. This isn't a call
+for maximal granularity — a typo fix or a one-line rename doesn't need
+its own commit — the signal is whether a step was independently verified,
+not how small a diff can get. A useful proxy: if a step is worth its own
+bullet in an issue's acceptance criteria or its own entry in a task list,
+it's worth its own commit.
+
 PRs reference and close their issue (`Closes #N`) rather than closing the
 issue directly.
 
