@@ -2,3 +2,9 @@
 # See CLAUDE.md for why these are pinned rather than left at IDF default.
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_SPI_FLASH_SUPPORT_BOYA_CHIP=y
+
+# TLS: trusted root certificate bundle, needed for esp_crt_bundle_attach()
+# in phone_home_sender.c to validate the Cloudflare-fronted HTTPS
+# endpoint. Already IDF's own default; pinned explicitly per this file's
+# convention of not relying on undocumented defaults.
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y

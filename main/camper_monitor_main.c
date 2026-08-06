@@ -1,7 +1,10 @@
 #include "ac_presence.h"
 #include "esp_err.h"
 #include "nvs_flash.h"
+#include "phone_home_task.h"
 #include "provisioning.h"
+#include "provisioning_schema.h"
+#include "provisioning_store.h"
 
 static void init_nvs(void)
 {
@@ -17,5 +20,10 @@ void app_main(void)
 {
     init_nvs();
     provisioning_run_if_needed();
-    ac_presence_start();
+
+    provisioning_config_t cfg;
+    ESP_ERROR_CHECK(provisioning_store_load(&cfg));
+
+    QueueHandle_t alert_queue = phone_home_task_start(&cfg);
+    ac_presence_start(phone_home_task_alert_cb, (void *)alert_queue);
 }

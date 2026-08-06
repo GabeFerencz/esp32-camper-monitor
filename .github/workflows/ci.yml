@@ -37,6 +37,13 @@ jobs:
           idf.py --preview set-target linux build
           ./build/phone_home_test.elf
 
+      - name: Build and run wifi_station host tests
+        working-directory: components/wifi_station/host_test
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py --preview set-target linux build
+          ./build/wifi_station_test.elf
+
   build-esp32:
     name: esp32 build (compile-only)
     runs-on: ubuntu-latest
