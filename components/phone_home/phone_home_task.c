@@ -32,11 +32,18 @@ static void push_report(phone_home_report_type_t type, ac_presence_state_t ac_st
 
 // Drains as many buffered reports as can be sent right now, stopping at
 // the first failure and re-pushing that report -- avoids busy-looping
-// against a down network, and preserves FIFO order for what's left.
+// against a down network. Always attempts the oldest pending alert
+// before any backlogged heartbeat (phone_home_buffer_pop_alert_first()),
+// per SPEC.md's alert-priority requirement. Re-pushing a failed report
+// appends it to the tail rather than restoring its original position,
+// but that's safe here: the alert-first scan re-checks every call, so a
+// requeued alert is found and retried again next time regardless of
+// where it physically landed -- it never ends up stuck behind newer
+// heartbeats.
 static void drain_buffer(void)
 {
     phone_home_report_t report;
-    while (phone_home_buffer_pop(&s_buffer, &report)) {
+    while (phone_home_buffer_pop_alert_first(&s_buffer, &report)) {
         phone_home_request_t request;
         if (!phone_home_report_build_request(&s_cfg, &report, &request)) {
             ESP_LOGE(TAG, "failed to build request for report type %d -- dropping", report.type);

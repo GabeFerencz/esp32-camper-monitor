@@ -1,6 +1,7 @@
 // Host-target (linux) Unity tests for phone_home_buffer.c. Exercises
-// FIFO push/pop order, count/is_full accounting, and oldest-eviction on
-// overflow -- pure in-memory structure, no networking involved.
+// FIFO push/pop order, count/is_full accounting, oldest-eviction on
+// overflow, and alert-first priority pop -- pure in-memory structure,
+// no networking involved.
 #include "phone_home_buffer.h"
 #include "unity.h"
 #include "unity_fixture.h"
@@ -12,6 +13,13 @@ static phone_home_report_t make_report(int64_t id)
         .ac_state = AC_PRESENCE_PRESENT,
         .uptime_us = id,  // used purely as an identifier in these tests
     };
+    return report;
+}
+
+static phone_home_report_t make_alert(int64_t id)
+{
+    phone_home_report_t report = make_report(id);
+    report.type = PHONE_HOME_REPORT_AC_ALERT;
     return report;
 }
 
@@ -93,10 +101,77 @@ TEST(phone_home_buffer, overflow_evicts_oldest_not_newest)
     TEST_ASSERT_EQUAL_UINT(0, phone_home_buffer_count(&s_buf));
 }
 
+TEST(phone_home_buffer, alert_first_pops_before_older_heartbeat)
+{
+    phone_home_report_t heartbeat = make_report(1);
+    phone_home_report_t alert = make_alert(2);
+    phone_home_buffer_push(&s_buf, &heartbeat);
+    phone_home_buffer_push(&s_buf, &alert);
+
+    phone_home_report_t out;
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL(PHONE_HOME_REPORT_AC_ALERT, out.type);
+    TEST_ASSERT_EQUAL_INT64(2, out.uptime_us);
+}
+
+TEST(phone_home_buffer, alert_first_oldest_alert_wins_among_several)
+{
+    phone_home_report_t alert_a = make_alert(1);
+    phone_home_report_t heartbeat = make_report(2);
+    phone_home_report_t alert_b = make_alert(3);
+    phone_home_buffer_push(&s_buf, &alert_a);
+    phone_home_buffer_push(&s_buf, &heartbeat);
+    phone_home_buffer_push(&s_buf, &alert_b);
+
+    phone_home_report_t out;
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL(PHONE_HOME_REPORT_AC_ALERT, out.type);
+    TEST_ASSERT_EQUAL_INT64(1, out.uptime_us);
+}
+
+TEST(phone_home_buffer, alert_first_falls_back_to_fifo_with_no_alert_pending)
+{
+    phone_home_report_t a = make_report(1);
+    phone_home_report_t b = make_report(2);
+    phone_home_buffer_push(&s_buf, &a);
+    phone_home_buffer_push(&s_buf, &b);
+
+    phone_home_report_t out;
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL_INT64(1, out.uptime_us);
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL_INT64(2, out.uptime_us);
+}
+
+TEST(phone_home_buffer, alert_first_removal_preserves_order_of_remainder)
+{
+    phone_home_report_t h1 = make_report(1);
+    phone_home_report_t a2 = make_alert(2);
+    phone_home_report_t h3 = make_report(3);
+    phone_home_buffer_push(&s_buf, &h1);
+    phone_home_buffer_push(&s_buf, &a2);
+    phone_home_buffer_push(&s_buf, &h3);
+
+    phone_home_report_t out;
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL_INT64(2, out.uptime_us);  // the alert, removed from the middle
+
+    // What's left (h1, h3) must still pop in their original relative order.
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL_INT64(1, out.uptime_us);
+    TEST_ASSERT_TRUE(phone_home_buffer_pop_alert_first(&s_buf, &out));
+    TEST_ASSERT_EQUAL_INT64(3, out.uptime_us);
+    TEST_ASSERT_EQUAL_UINT(0, phone_home_buffer_count(&s_buf));
+}
+
 TEST_GROUP_RUNNER(phone_home_buffer)
 {
     RUN_TEST_CASE(phone_home_buffer, starts_empty);
     RUN_TEST_CASE(phone_home_buffer, pops_in_fifo_order);
     RUN_TEST_CASE(phone_home_buffer, reports_full_at_capacity);
     RUN_TEST_CASE(phone_home_buffer, overflow_evicts_oldest_not_newest);
+    RUN_TEST_CASE(phone_home_buffer, alert_first_pops_before_older_heartbeat);
+    RUN_TEST_CASE(phone_home_buffer, alert_first_oldest_alert_wins_among_several);
+    RUN_TEST_CASE(phone_home_buffer, alert_first_falls_back_to_fifo_with_no_alert_pending);
+    RUN_TEST_CASE(phone_home_buffer, alert_first_removal_preserves_order_of_remainder);
 }

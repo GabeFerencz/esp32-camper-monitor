@@ -37,6 +37,20 @@ void phone_home_buffer_push(phone_home_buffer_t *buf, const phone_home_report_t 
 // (leaving *out untouched) if the buffer is empty.
 bool phone_home_buffer_pop(phone_home_buffer_t *buf, phone_home_report_t *out);
 
+// Pops the oldest pending PHONE_HOME_REPORT_AC_ALERT report into *out,
+// regardless of how many older heartbeats are backlogged ahead of it --
+// per SPEC.md's alert-priority requirement, an alert must never wait
+// behind heartbeat traffic. Falls back to plain phone_home_buffer_pop()
+// (oldest overall) when no alert is pending, so a heartbeat-only backlog
+// behaves exactly like today's plain FIFO.
+//
+// Safe to combine with a caller that re-pushes a failed send: push()
+// always appends to the tail, but because this function re-scans for
+// the oldest alert on every call rather than trusting buffer position,
+// a re-queued failing alert is found and retried again on the very next
+// call regardless of where it physically landed.
+bool phone_home_buffer_pop_alert_first(phone_home_buffer_t *buf, phone_home_report_t *out);
+
 size_t phone_home_buffer_count(const phone_home_buffer_t *buf);
 bool phone_home_buffer_is_full(const phone_home_buffer_t *buf);
 
