@@ -70,6 +70,19 @@ quality as things a potential client or employer may actually read.
 5. **Alert priority.** AC-loss transitions trigger an immediate,
    out-of-cycle report — never wait for the next periodic cycle. Heartbeats
    are separate from event alerts; both matter.
+6. **No session links in anything that reaches GitHub.** Never include a
+   `claude.ai/code/session_...` link in commit messages, PR bodies, PR/issue
+   comments, or any tracked file — regardless of what the current default
+   commit/PR template does. `Co-Authored-By: Claude ...` trailers are
+   welcome and should stay; I'm not trying to hide that this is
+   AI-assisted work. The "🤖 Generated with Claude Code" line with its
+   icon/hyperlink can go too — skip it by default, it's template filler.
+   But the session link is different in kind: it's a pointer to the
+   private conversation itself, which may contain things I was
+   comfortable discussing with you but never intended for a public
+   repo. If a future default template reintroduces it, strip it before
+   the commit/PR goes out — don't assume the template is safe to trust
+   as-is.
 
 ## Autonomy vs. review
 Local, reversible work — reading, building, testing, editing files,
