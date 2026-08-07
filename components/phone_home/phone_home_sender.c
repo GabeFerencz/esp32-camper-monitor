@@ -10,7 +10,12 @@ static const char *TAG = "phone_home_sender";
 
 #define PHONE_HOME_SEND_TIMEOUT_MS 10000
 
-esp_err_t phone_home_sender_send(const phone_home_request_t *req)
+static const char *report_type_name(phone_home_report_type_t type)
+{
+    return type == PHONE_HOME_REPORT_AC_ALERT ? "alert" : "heartbeat";
+}
+
+esp_err_t phone_home_sender_send(const phone_home_request_t *req, phone_home_report_type_t type)
 {
     if (req == NULL) {
         return ESP_ERR_INVALID_ARG;
@@ -40,11 +45,11 @@ esp_err_t phone_home_sender_send(const phone_home_request_t *req)
     // or cf_client_secret -- CLAUDE.md constraint #2. Status/err alone are
     // enough to act on a failure.
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "send failed: %s", esp_err_to_name(err));
+        ESP_LOGW(TAG, "send failed (%s): %s", report_type_name(type), esp_err_to_name(err));
         return err;
     }
     if (status < 200 || status >= 300) {
-        ESP_LOGW(TAG, "send rejected: HTTP %d", status);
+        ESP_LOGW(TAG, "send rejected (%s): HTTP %d", report_type_name(type), status);
         return ESP_FAIL;
     }
     return ESP_OK;

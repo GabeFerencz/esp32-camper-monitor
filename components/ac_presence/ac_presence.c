@@ -55,8 +55,17 @@ static void ac_presence_task(void *arg)
 
     while (1) {
         bool raw = ac_presence_gpio_read();
-        ac_presence_debounce_process(&s_debounce, raw, esp_timer_get_time());
+        bool transitioned = ac_presence_debounce_process(&s_debounce, raw, esp_timer_get_time());
         s_last_state = s_debounce.state;
+        if (transitioned) {
+            // Logged here, right as the debounced transition is confirmed --
+            // independent of whatever alert_cb does with it (queueing,
+            // sending, or nothing), so this line alone proves the GPIO
+            // event fired and when, without relying on downstream send
+            // logging to infer it.
+            ESP_LOGI(TAG, "AC presence transition confirmed: %s",
+                     s_last_state == AC_PRESENCE_PRESENT ? "PRESENT" : "LOST");
+        }
         vTaskDelay(pdMS_TO_TICKS(AC_PRESENCE_SAMPLE_PERIOD_MS));
     }
 }
