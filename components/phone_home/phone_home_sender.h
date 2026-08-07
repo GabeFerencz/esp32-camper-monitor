@@ -16,7 +16,11 @@ extern "C" {
 // transport error or non-2xx response is reported identically -- from
 // the caller's perspective both mean "failed, re-buffer and retry,"
 // so the distinction doesn't change what happens next.
-esp_err_t phone_home_sender_send(const phone_home_request_t *req);
+//
+// `type` is caller-supplied metadata (already known from the report that
+// produced *req) used only to tag failure/rejection log lines as
+// heartbeat vs. alert -- it plays no part in the request itself.
+esp_err_t phone_home_sender_send(const phone_home_request_t *req, phone_home_report_type_t type);
 
 #ifdef __cplusplus
 }

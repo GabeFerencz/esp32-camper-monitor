@@ -42,7 +42,7 @@ static void drain_buffer(void)
             ESP_LOGE(TAG, "failed to build request for report type %d -- dropping", report.type);
             continue;
         }
-        if (phone_home_sender_send(&request) != ESP_OK) {
+        if (phone_home_sender_send(&request, report.type) != ESP_OK) {
             phone_home_buffer_push(&s_buffer, &report);
             break;
         }
