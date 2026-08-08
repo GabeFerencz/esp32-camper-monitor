@@ -6,9 +6,9 @@ is in `SPEC.md` — read it before starting any feature work. This file is
 for standing conventions and constraints; don't duplicate the spec here.
 
 This is a public hobby project, but it should read like the hobby work of
-a professional: clear commits, real documentation, no filler, no sloppy
-placeholder comments left behind. Treat code quality and documentation
-quality as things a potential client or employer may actually read.
+a professional — clear commits, real documentation, no filler or sloppy
+placeholder comments — since a potential client or employer may actually
+read it.
 
 ## Environment
 - Target: ESP32 (WROOM-32, DEVKITV1 dev board)
@@ -36,8 +36,9 @@ quality as things a potential client or employer may actually read.
    Arduino-style loop. See `SPEC.md` for the task breakdown.
 2. **No device credentials in any tracked *or* untracked file — ever.**
    Firmware secrets (WiFi SSID/password, Cloudflare Access service token,
-   phone-home hostname) are provisioned at runtime into NVS over a serial
-   console (see SPEC.md's Provisioning section) — never written to disk
+   phone-home hostname, Home Assistant webhook ID) are provisioned at
+   runtime into NVS over a serial console (see SPEC.md's Provisioning
+   section) — never written to disk
    in any form, gitignored or not. This is deliberate, not just
    `.gitignore` discipline: Claude Code has read access to the working
    directory, so a gitignored file only keeps a secret off GitHub, not out
@@ -120,9 +121,8 @@ Branch creation for issue-backed work always goes through
 name.
 
 Local work (edits, commits, builds, tests) proceeds without per-step
-check-in, per the human-review rule above. Sign-off is still required
-before: `gh issue create`, `git push`, `gh pr create`, or any issue/PR
-edit that adds new written content.
+check-in. Sign-off before anything reaching GitHub follows the rule under
+"Autonomy vs. review" above.
 
 **Commit at each verified checkpoint, not once at the end.** "No
 per-step check-in" is about not needing permission to commit — it isn't
@@ -159,6 +159,14 @@ branch link, not by closing keywords in the text. If a PR is explicitly
 a partial slice of an issue (some acceptance criteria intentionally left
 for follow-up), reopen the issue immediately after merge as a deliberate
 step — don't rely on PR phrasing to keep it open.
+
+**A PR that changes what's implemented, working, or in scope updates the
+docs in the same PR — not as a follow-up.** Update README.md's
+status/current-state description, and SPEC.md too if architecture or scope
+changed. If a PR has no user-facing or status-relevant change, say so
+explicitly in the PR description rather than silently skipping docs. This
+is what catches status drift before it ships — e.g. a README still calling
+a feature "next" after it's already built.
 
 ## Workflow preference
 Use plan mode for anything beyond a trivial fix — draft the approach against

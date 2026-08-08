@@ -111,9 +111,10 @@ firmware behavior.
   already uses. No new hardware or transport. See "Provisioning" below for
   the current schema and flow. The webhook ID is a new credential this
   transport introduces — Home Assistant's own guidance is to treat it like
-  a password — so it must extend the provisioning schema rather than be
-  hardcoded; see the ADR for that decision and the not-yet-created
-  implementation issue for the actual schema change. Project context
+  a password — so it extends the provisioning schema rather than being
+  hardcoded; see the ADR for that decision. The schema change (`webhook_id`
+  field, `set-webhook` console command) shipped as part of issue #9.
+  Project context
   that isn't a firmware secret (real host/path details for the *receiver*
   side) still lives in the gitignored `CLAUDE.local.md`.
 
