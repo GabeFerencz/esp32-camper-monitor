@@ -8,7 +8,6 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
-#include "provisioning_fingerprint.h"
 #include "provisioning_schema.h"
 #include "provisioning_store.h"
 #include "provisioning_validate.h"
@@ -34,19 +33,16 @@ static void print_plain_field(const char *label, const char *value)
     printf("  %-14s %s\n", label, (value[0] != '\0') ? value : "(not set)");
 }
 
-// Prints a non-reversible fingerprint instead of any part of the real
-// value, so a captured terminal log (screenshot, copy-paste into an
-// issue) can't leak the secret -- not even the trailing characters the
-// old masked-but-partial display used to show.
-static void print_fingerprint_field(const char *label, const char *value)
+// Prints only whether a secret-class field is set, never any part of
+// the real value or a digest of it. A digest looks non-reversible but
+// isn't a reliable guarantee for every field -- a human-chosen WiFi
+// password, for instance, is guessable enough that a captured hash could
+// be dictionary-attacked just as easily as if it were shown in full, so
+// this doesn't pretend to offer a security property some fields can't
+// actually back up.
+static void print_hidden_field(const char *label, const char *value)
 {
-    if (value[0] == '\0') {
-        printf("  %-14s (not set)\n", label);
-        return;
-    }
-    char fp[PROVISIONING_FINGERPRINT_LEN + 1];
-    provisioning_fingerprint(value, fp);
-    printf("  %-14s fp:%s\n", label, fp);
+    printf("  %-14s %s\n", label, (value[0] != '\0') ? "<hidden>" : "(not set)");
 }
 
 // Overwrites a stack buffer that held a secret, so it doesn't sit around
@@ -243,11 +239,11 @@ static int cmd_show(int argc, char **argv)
 
     printf("current provisioning state:\n");
     print_plain_field("wifi_ssid", cfg.wifi_ssid);
-    print_fingerprint_field("wifi_pass", cfg.wifi_pass);
-    print_fingerprint_field("cf_client_id", cfg.cf_client_id);
-    print_fingerprint_field("cf_client_secret", cfg.cf_client_secret);
-    print_fingerprint_field("phone_host", cfg.phone_host);
-    print_fingerprint_field("webhook_id", cfg.webhook_id);
+    print_hidden_field("wifi_pass", cfg.wifi_pass);
+    print_hidden_field("cf_client_id", cfg.cf_client_id);
+    print_hidden_field("cf_client_secret", cfg.cf_client_secret);
+    print_hidden_field("phone_host", cfg.phone_host);
+    print_hidden_field("webhook_id", cfg.webhook_id);
     printf("  %-14s %s\n", "complete", provisioning_config_is_complete(&cfg) ? "yes" : "no");
     return 0;
 }
@@ -313,7 +309,7 @@ static void register_commands(void)
 
     const esp_console_cmd_t show_cmd = {
         .command = "show",
-        .help = "Show currently stored provisioning values (secrets shown as a fingerprint, never plaintext)",
+        .help = "Show currently stored provisioning values (secrets shown as <hidden>, never plaintext)",
         .hint = NULL,
         .func = &cmd_show,
     };

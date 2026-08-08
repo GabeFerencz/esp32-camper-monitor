@@ -53,7 +53,7 @@ set-wifi <ssid>    # then enter the password at the masked prompt
 set-cf-token       # enter client ID and secret at masked prompts
 set-host           # enter the hostname at a masked prompt
 set-webhook        # enter the webhook ID at a masked prompt
-show      # confirm the values (secret-class fields shown as a fingerprint, never plaintext)
+show      # confirm the values (secret-class fields shown as <hidden>, never plaintext)
 commit    # validates and reboots into normal operation
 ```
 
@@ -61,10 +61,13 @@ Only the SSID is ever typed as part of a command line — every other field
 (WiFi password, Cloudflare Access client ID/secret, phone-home hostname,
 webhook ID) is entered at a masked prompt: characters echo as `*` instead
 of the value typed, so nothing plaintext ever appears in the serial
-stream, and `show` displays a non-reversible fingerprint rather than any
-part of the real value. This closes a gap the original design left open:
-passing a secret as a command-line argument still echoed it in full as
-it was typed, even before `show` was involved.
+stream, and `show` displays `<hidden>` rather than any part of the real
+value (or a digest of it — a digest looks safe but isn't a reliable
+guarantee for a human-chosen field like the WiFi password, which is
+guessable enough that a captured digest could be dictionary-attacked
+about as easily as the plaintext). This closes a gap the original design
+left open: passing a secret as a command-line argument still echoed it
+in full as it was typed, even before `show` was involved.
 
 **Re-provisioning** an already-deployed device (new WiFi network, rotated
 token) doesn't need a rebuild or reflash — erase just the NVS partition to

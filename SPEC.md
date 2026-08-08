@@ -139,13 +139,14 @@ firmware behavior.
   (hostname prompt follows), `set-webhook` (webhook ID prompt follows).
   This is deliberate, not incidental: passing a secret as a line argument
   would echo it in full as it's typed, before `show` is ever involved —
-  see issue #27. `show` prints the SSID plainly and a fixed-length,
-  non-reversible fingerprint (truncated SHA-256, computed by a
-  self-contained hasher in `provisioning_sha256.c` rather than pulling in
-  ESP-IDF's mbedtls, which in this ESP-IDF version only exposes SHA-256
-  through the heavier PSA Crypto API) for every secret-class field —
-  never a substring of the real value. `commit` validates completeness,
-  then reboots into normal operation.
+  see issue #27. `show` prints the SSID plainly and `<hidden>` for every
+  secret-class field that's set — never a substring of the real value, and
+  deliberately not a digest either: a digest looks non-reversible but
+  isn't a reliable guarantee for every field (a human-chosen WiFi
+  password is guessable enough that a captured digest could be
+  dictionary-attacked about as easily as the plaintext), so this doesn't
+  claim a security property some fields can't actually back up. `commit`
+  validates completeness, then reboots into normal operation.
 - **Re-provisioning** (new WiFi network, rotated token) doesn't require a
   rebuild/reflash: erase just the NVS partition (`parttool.py
   erase_partition --partition-name=nvs`) to force the device back into

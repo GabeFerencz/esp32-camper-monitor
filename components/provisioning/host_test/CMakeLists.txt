@@ -5,4 +5,4 @@ set(COMPONENTS main)
 # FreeRTOS itself doesn't build for the linux target; use IDF's mock.
 list(APPEND EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/tools/mocks/freertos/")
 
-project(provisioning_test)
+project(provisioning_validate_test)
