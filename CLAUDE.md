@@ -36,8 +36,9 @@ read it.
    Arduino-style loop. See `SPEC.md` for the task breakdown.
 2. **No device credentials in any tracked *or* untracked file — ever.**
    Firmware secrets (WiFi SSID/password, Cloudflare Access service token,
-   phone-home hostname) are provisioned at runtime into NVS over a serial
-   console (see SPEC.md's Provisioning section) — never written to disk
+   phone-home hostname, Home Assistant webhook ID) are provisioned at
+   runtime into NVS over a serial console (see SPEC.md's Provisioning
+   section) — never written to disk
    in any form, gitignored or not. This is deliberate, not just
    `.gitignore` discipline: Claude Code has read access to the working
    directory, so a gitignored file only keeps a secret off GitHub, not out

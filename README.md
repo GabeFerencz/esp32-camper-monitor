@@ -38,9 +38,10 @@ gets its WiFi/phone-home config.
 
 ## Provisioning
 The firmware ships with no WiFi SSID, no Cloudflare Access service token,
-and no phone-home hostname anywhere in source. On boot, if that config is
-missing from NVS, the device drops into a serial-console provisioning
-mode over the same USB/UART connection `idf.py monitor` already uses:
+no phone-home hostname, and no Home Assistant webhook ID anywhere in
+source. On boot, if that config is missing from NVS, the device drops
+into a serial-console provisioning mode over the same USB/UART connection
+`idf.py monitor` already uses:
 
 ```bash
 idf.py -p /dev/ttyUSB0 monitor
@@ -48,7 +49,8 @@ idf.py -p /dev/ttyUSB0 monitor
 set-wifi <ssid> <password>
 set-cf-token <client-id> <client-secret>
 set-host <hostname>
-show      # confirm the values (password/secret are masked)
+set-webhook <webhook-id>
+show      # confirm the values (password/secret/webhook ID are masked)
 commit    # validates and reboots into normal operation
 ```
 
@@ -65,9 +67,10 @@ python $IDF_PATH/components/partition_table/parttool.py \
 This repo intentionally documents its own security practices as part of the
 learning goal above:
 - No device-specific secret (WiFi credentials, Cloudflare Access service
-  token, phone-home hostname) exists in any file in this repo, tracked or
-  untracked, at any point — see "Provisioning" above. This is a deliberate
-  choice, not just `.gitignore` discipline: Claude Code (used throughout
+  token, phone-home hostname, Home Assistant webhook ID) exists in any
+  file in this repo, tracked or untracked, at any point — see
+  "Provisioning" above. This is a deliberate choice, not just
+  `.gitignore` discipline: Claude Code (used throughout
   this project's development, see below) has read access to the working
   directory, so a gitignored file only keeps a secret off GitHub, not out
   of the AI agent's context. Removing the secret from the filesystem
