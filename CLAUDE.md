@@ -139,6 +139,17 @@ it's worth its own commit.
 PRs reference and close their issue (`Closes #N`) rather than closing the
 issue directly.
 
+**Never write a bare `#<number>` for anything but an actual issue/PR
+reference.** GitHub auto-links any `#<number>` inside issue bodies, PR
+bodies, comments, and commit messages to an issue or PR in this repo —
+regardless of what it was meant to refer to. Numbering acceptance
+criteria, list items, or steps as "AC #5", "item #3", "step #2" in
+anything that reaches GitHub creates a spurious, misleading
+cross-reference link to whatever issue/PR happens to hold that number.
+Spell those out instead — "AC 5", "criterion 5", "item 3" — and reserve
+`#<number>` strictly for real issue/PR references (`Closes #9`, "see
+#18", etc.).
+
 **Partial-scope PRs auto-close their issue too — watch for this.**
 Because branches are created via `gh issue develop`, GitHub links the
 branch to its issue, and merging closes that issue automatically. This
