@@ -159,6 +159,14 @@ a partial slice of an issue (some acceptance criteria intentionally left
 for follow-up), reopen the issue immediately after merge as a deliberate
 step — don't rely on PR phrasing to keep it open.
 
+**A PR that changes what's implemented, working, or in scope updates the
+docs in the same PR — not as a follow-up.** Update README.md's
+status/current-state description, and SPEC.md too if architecture or scope
+changed. If a PR has no user-facing or status-relevant change, say so
+explicitly in the PR description rather than silently skipping docs. This
+is what catches status drift before it ships — e.g. a README still calling
+a feature "next" after it's already built.
+
 ## Workflow preference
 Use plan mode for anything beyond a trivial fix — draft the approach against
 the relevant `SPEC.md` section first, wait for approval, then implement.
