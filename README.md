@@ -1,16 +1,20 @@
 # ESP32 Camper Power Monitor
 
-Status: **early stage — AC-presence detection (issue #1) and CI (issue #4)
-done; battery voltage sensing (issue #2) up next.**
+Status: **early stage — AC-presence detection, CI, and runtime NVS
+provisioning are done; phone-home (WiFi station, HTTPS client, local
+buffering, heartbeat, ADR-backed transport design, host tests) is
+substantially built. Battery voltage sensing (issue #2) is next.**
 
 An ESP32-based monitor for a camper at a remote site: tracks house battery
 voltage and AC/shore-power presence, and reports status home. Built to run
 unattended for extended periods with no guarantee of physical access.
 
-This is also a deliberate learning project — the goal is to build current,
-AI-augmented embedded development practice on real hardware, and document
-that process in the open as it happens. Expect commits that show the actual
-process, not just polished end states.
+This is a hobby project, built in whatever time is actually available, not
+against unlimited free time. AI assistance (Claude Code, used throughout)
+is part of that: it means more gets done in the time available, and it
+doubles as practice with AI-augmented development workflows worth carrying
+into other work. Expect commits that show the actual process, not just
+polished end states.
 
 ## Full spec
 See [`SPEC.md`](./SPEC.md) for the complete design: hardware, firmware
