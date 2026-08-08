@@ -25,6 +25,9 @@ Cloudflare Tunnel + Access, isolated from other services on the same host).
 - ESP32-WROOM-32 (DEVKITV1 dev board)
 - ESP-IDF v6.0.2, FreeRTOS-native (task-based, not an Arduino-style loop)
 
+See [`docs/hardware.md`](./docs/hardware.md) for full part details, wiring,
+and datasheet links.
+
 ## Building
 ```bash
 get_idf                         # or: source /path/to/esp-idf/export.sh
