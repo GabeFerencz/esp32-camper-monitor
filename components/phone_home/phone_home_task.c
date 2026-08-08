@@ -9,6 +9,7 @@
 #include "ac_presence.h"
 #include "phone_home_buffer.h"
 #include "phone_home_heartbeat.h"
+#include "phone_home_poll_schedule.h"
 #include "phone_home_report.h"
 #include "phone_home_sender.h"
 #include "wifi_station.h"
@@ -60,9 +61,19 @@ static void phone_home_task(void *arg)
 {
     (void)arg;
 
+    phone_home_poll_schedule_t poll_sched;
+    phone_home_poll_schedule_init(&poll_sched, PHONE_HOME_TASK_POLL_MS * 1000LL, esp_timer_get_time());
+
     while (1) {
+        // Remaining-time-to-deadline, not the full period, is what keeps
+        // this grid absolute -- see phone_home_poll_schedule.h. Ceiling
+        // the ms conversion so a near-zero remainder still blocks at
+        // least one tick instead of spinning until advance() catches up.
+        int64_t remaining_us = phone_home_poll_schedule_remaining_us(&poll_sched, esp_timer_get_time());
+        TickType_t timeout_ticks = pdMS_TO_TICKS((remaining_us + 999) / 1000);
+
         ac_presence_state_t alert_state;
-        if (xQueueReceive(s_alert_queue, &alert_state, pdMS_TO_TICKS(PHONE_HOME_TASK_POLL_MS)) == pdTRUE) {
+        if (xQueueReceive(s_alert_queue, &alert_state, timeout_ticks) == pdTRUE) {
             push_report(PHONE_HOME_REPORT_AC_ALERT, alert_state);
         }
 
@@ -74,6 +85,8 @@ static void phone_home_task(void *arg)
         if (wifi_station_is_connected()) {
             drain_buffer();
         }
+
+        phone_home_poll_schedule_advance(&poll_sched, esp_timer_get_time());
     }
 }
 
