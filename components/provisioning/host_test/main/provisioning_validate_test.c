@@ -1,6 +1,7 @@
 // Host-target (linux) Unity tests for provisioning_validate.c. Exercises
 // completeness checks (each required field missing individually) and the
 // phone-home host's scheme-prefix rejection, without touching real NVS.
+// Entry point is provisioning_test_main.c.
 #include <string.h>
 
 #include "provisioning_schema.h"
@@ -110,15 +111,4 @@ TEST_GROUP_RUNNER(provisioning_validate)
     RUN_TEST_CASE(provisioning_validate, phone_host_with_http_scheme_is_rejected);
     RUN_TEST_CASE(provisioning_validate, phone_host_with_https_scheme_is_rejected);
     RUN_TEST_CASE(provisioning_validate, bare_hostname_is_valid);
-}
-
-static void run_all_tests(void)
-{
-    RUN_TEST_GROUP(provisioning_validate);
-}
-
-int main(int argc, char **argv)
-{
-    UNITY_MAIN_FUNC(run_all_tests);
-    return 0;
 }

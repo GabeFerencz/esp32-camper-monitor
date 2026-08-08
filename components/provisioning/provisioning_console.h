@@ -1,7 +1,9 @@
 // esp_console-based provisioning REPL: lets an operator type WiFi
 // credentials, the Cloudflare Access service token, and the phone-home
 // hostname in over the same USB/UART connection idf.py monitor already
-// uses. See provisioning.c for how this is driven from app_main.
+// uses. Secret-class fields are entered at masked prompts, never as
+// line arguments -- see read_masked_line() in provisioning_console.c.
+// See provisioning.c for how this is driven from app_main.
 #pragma once
 
 #include "freertos/FreeRTOS.h"
