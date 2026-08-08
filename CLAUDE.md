@@ -6,9 +6,9 @@ is in `SPEC.md` — read it before starting any feature work. This file is
 for standing conventions and constraints; don't duplicate the spec here.
 
 This is a public hobby project, but it should read like the hobby work of
-a professional: clear commits, real documentation, no filler, no sloppy
-placeholder comments left behind. Treat code quality and documentation
-quality as things a potential client or employer may actually read.
+a professional — clear commits, real documentation, no filler or sloppy
+placeholder comments — since a potential client or employer may actually
+read it.
 
 ## Environment
 - Target: ESP32 (WROOM-32, DEVKITV1 dev board)
@@ -120,9 +120,8 @@ Branch creation for issue-backed work always goes through
 name.
 
 Local work (edits, commits, builds, tests) proceeds without per-step
-check-in, per the human-review rule above. Sign-off is still required
-before: `gh issue create`, `git push`, `gh pr create`, or any issue/PR
-edit that adds new written content.
+check-in. Sign-off before anything reaching GitHub follows the rule under
+"Autonomy vs. review" above.
 
 **Commit at each verified checkpoint, not once at the end.** "No
 per-step check-in" is about not needing permission to commit — it isn't
