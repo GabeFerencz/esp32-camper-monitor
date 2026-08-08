@@ -129,11 +129,24 @@ firmware behavior.
   whether all six fields are present and non-empty. If not, it starts
   the provisioning console and blocks there — provisioning mode and
   normal operation never run in the same boot.
-- **Console commands:** `set-wifi <ssid> <password>`, `set-cf-token
-  <client-id> <client-secret>`, `set-host <hostname>`, `set-webhook
-  <webhook-id>`, `show` (prints current values, masking the password,
-  client secret, and webhook ID), `commit` (validates completeness, then
-  reboots into normal operation).
+- **Console commands and secret-class fields:** SSID is the only field
+  entered as a line argument (`set-wifi <ssid>`); WiFi password, CF Access
+  client ID, CF Access client secret, phone-home hostname, and webhook ID
+  are all secret-class and entered only at a masked prompt (`*` echoed
+  instead of the typed character) after the command is run with no
+  further arguments — `set-wifi <ssid>` (password prompt follows),
+  `set-cf-token` (client ID and secret prompts follow), `set-host`
+  (hostname prompt follows), `set-webhook` (webhook ID prompt follows).
+  This is deliberate, not incidental: passing a secret as a line argument
+  would echo it in full as it's typed, before `show` is ever involved —
+  see issue #27. `show` prints the SSID plainly and `<hidden>` for every
+  secret-class field that's set — never a substring of the real value, and
+  deliberately not a digest either: a digest looks non-reversible but
+  isn't a reliable guarantee for every field (a human-chosen WiFi
+  password is guessable enough that a captured digest could be
+  dictionary-attacked about as easily as the plaintext), so this doesn't
+  claim a security property some fields can't actually back up. `commit`
+  validates completeness, then reboots into normal operation.
 - **Re-provisioning** (new WiFi network, rotated token) doesn't require a
   rebuild/reflash: erase just the NVS partition (`parttool.py
   erase_partition --partition-name=nvs`) to force the device back into
