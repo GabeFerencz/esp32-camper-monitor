@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cJSON.h"
+
 static const char *report_type_str(phone_home_report_type_t type)
 {
     return (type == PHONE_HOME_REPORT_HEARTBEAT) ? "heartbeat" : "ac_alert";
@@ -19,6 +21,37 @@ static const char *ac_state_str(ac_presence_state_t state)
 static bool snprintf_fits(int written, size_t buf_size)
 {
     return written >= 0 && (size_t)written < buf_size;
+}
+
+// cJSON's number type stores values as a double, mirrored into a 32-bit
+// int for integer printing (cJSON_SetNumberValue) -- not enough to hold
+// esp_timer_get_time() microsecond uptimes past ~35 minutes of runtime
+// without silently wrapping. Rendering uptime_us as a pre-formatted raw
+// token instead of a cJSON number keeps full int64_t precision without
+// going through that lossy path.
+static bool build_body(const phone_home_report_t *report, char *out, size_t out_size)
+{
+    char uptime_buf[32];
+    int n = snprintf(uptime_buf, sizeof(uptime_buf), "%lld", (long long)report->uptime_us);
+    if (!snprintf_fits(n, sizeof(uptime_buf))) {
+        return false;
+    }
+
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL) {
+        return false;
+    }
+
+    bool ok = cJSON_AddStringToObject(root, "type", report_type_str(report->type)) != NULL &&
+              cJSON_AddStringToObject(root, "ac_state", ac_state_str(report->ac_state)) != NULL &&
+              cJSON_AddRawToObject(root, "uptime_us", uptime_buf) != NULL;
+
+    if (ok) {
+        ok = cJSON_PrintPreallocated(root, out, (int)out_size, false) != 0;
+    }
+
+    cJSON_Delete(root);
+    return ok;
 }
 
 bool phone_home_report_build_request(const provisioning_config_t *cfg,
@@ -45,11 +78,7 @@ bool phone_home_report_build_request(const provisioning_config_t *cfg,
         return false;
     }
 
-    n = snprintf(out->body, sizeof(out->body),
-                 "{\"type\":\"%s\",\"ac_state\":\"%s\",\"uptime_us\":%lld}",
-                 report_type_str(report->type), ac_state_str(report->ac_state),
-                 (long long)report->uptime_us);
-    if (!snprintf_fits(n, sizeof(out->body))) {
+    if (!build_body(report, out->body, sizeof(out->body))) {
         return false;
     }
 

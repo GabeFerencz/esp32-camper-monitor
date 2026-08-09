@@ -69,6 +69,25 @@ TEST(phone_home_report, ac_alert_builds_expected_body)
         "{\"type\":\"ac_alert\",\"ac_state\":\"lost\",\"uptime_us\":42}", out.body);
 }
 
+TEST(phone_home_report, large_uptime_preserves_full_precision)
+{
+    // Exercises the reason build_body() renders uptime_us as a raw token
+    // instead of a cJSON number: cJSON's integer mirror is a 32-bit int,
+    // so a naive cJSON_AddNumberToObject() would wrap a value like this
+    // one (well past INT32_MAX) instead of printing it exactly.
+    provisioning_config_t cfg = make_cfg();
+    phone_home_report_t report = {
+        .type = PHONE_HOME_REPORT_HEARTBEAT,
+        .ac_state = AC_PRESENCE_PRESENT,
+        .uptime_us = 5000000000LL,
+    };
+    phone_home_request_t out;
+
+    TEST_ASSERT_TRUE(phone_home_report_build_request(&cfg, &report, &out));
+    TEST_ASSERT_EQUAL_STRING(
+        "{\"type\":\"heartbeat\",\"ac_state\":\"present\",\"uptime_us\":5000000000}", out.body);
+}
+
 TEST(phone_home_report, cf_access_header_values_pass_through)
 {
     provisioning_config_t cfg = make_cfg();
@@ -118,6 +137,7 @@ TEST_GROUP_RUNNER(phone_home_report)
 {
     RUN_TEST_CASE(phone_home_report, heartbeat_builds_expected_url_and_body);
     RUN_TEST_CASE(phone_home_report, ac_alert_builds_expected_body);
+    RUN_TEST_CASE(phone_home_report, large_uptime_preserves_full_precision);
     RUN_TEST_CASE(phone_home_report, cf_access_header_values_pass_through);
     RUN_TEST_CASE(phone_home_report, oversized_url_fields_are_rejected);
     RUN_TEST_CASE(phone_home_report, null_arguments_are_rejected);

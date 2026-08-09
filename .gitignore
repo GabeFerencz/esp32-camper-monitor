@@ -1,8 +1,12 @@
 # ESP-IDF build artifacts
 build/
-managed_components/
-dependencies.lock
 sdkconfig.old
+
+# Component Manager: the fetched package source is a cache, not source --
+# ignored like node_modules. dependencies.lock is NOT ignored (see below):
+# it's what pins the exact resolved version + content hash for a
+# reproducible build, same role as package-lock.json/Cargo.lock.
+managed_components/
 
 # Keep sdkconfig.defaults tracked; ignore the generated local sdkconfig
 # so per-machine build quirks don't get committed.

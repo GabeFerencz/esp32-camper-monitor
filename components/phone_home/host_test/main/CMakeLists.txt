@@ -8,4 +8,4 @@ idf_component_register(SRCS "phone_home_test_main.c"
                              "../../phone_home_heartbeat.c"
                              "../../phone_home_poll_schedule.c"
                         INCLUDE_DIRS "../.." "../../../provisioning" "../../../ac_presence"
-                        PRIV_REQUIRES unity)
+                        PRIV_REQUIRES unity cjson)
