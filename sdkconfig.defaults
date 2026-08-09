@@ -14,3 +14,12 @@ CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
 # table ahead of OTA/Bluetooth work. See issue #13.
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# Brownout detector: hardware reset when supply voltage sags below the
+# selected threshold. Already IDF's own default (enabled, lowest
+# detection level); pinned explicitly per this file's convention of not
+# relying on undocumented defaults, and because SPEC.md calls out
+# brownout detection as a non-negotiable reliability requirement for
+# this device's unattended operation. See issue #34.
+CONFIG_ESP_BROWNOUT_DET=y
+CONFIG_ESP_BROWNOUT_DET_LVL_SEL_0=y
