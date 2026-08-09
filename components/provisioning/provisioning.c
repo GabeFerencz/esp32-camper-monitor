@@ -19,7 +19,7 @@ void provisioning_run_if_needed(void)
     ESP_ERROR_CHECK(provisioning_store_load(&cfg));
 
     if (provisioning_config_is_complete(&cfg)) {
-        ESP_LOGI(TAG, "provisioning complete (phone-home host: %s)", cfg.phone_host);
+        ESP_LOGI(TAG, "provisioning complete");
         return;
     }
 
