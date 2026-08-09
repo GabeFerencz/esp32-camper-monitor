@@ -54,6 +54,11 @@ static void drain_buffer(void)
             phone_home_buffer_push(&s_buffer, &report);
             break;
         }
+        // Headroom check for the TLS handshake stack cost (see #30) --
+        // logged on every successful send, not just the first, since
+        // headroom needs to hold up across the heartbeat cadence too.
+        ESP_LOGI(TAG, "send ok, stack high-water mark: %u bytes remaining",
+                 (unsigned)uxTaskGetStackHighWaterMark(NULL));
     }
 }
 
@@ -111,7 +116,13 @@ QueueHandle_t phone_home_task_start(const provisioning_config_t *cfg)
         return NULL;
     }
 
-    xTaskCreate(phone_home_task, "phone_home", 4096, NULL, 4, NULL);
+    // 12 KB: the mbedTLS ECDHE handshake (esp_crt_bundle verification
+    // against RSA and multiple EC curve types, see sdkconfig) is the
+    // dominant cost here, not this task's own locals -- 4 KB overflowed
+    // on the first real handshake (#30). Sized for headroom, confirmed
+    // by the high-water-mark log in drain_buffer() above rather than
+    // just "didn't crash this time."
+    xTaskCreate(phone_home_task, "phone_home", 12288, NULL, 4, NULL);
     return s_alert_queue;
 }
 
