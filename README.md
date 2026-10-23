@@ -1,9 +1,33 @@
 # ESP32 Camper Power Monitor
 
-Status: **early stage — AC-presence detection, CI, and runtime NVS
-provisioning are done; phone-home (WiFi station, HTTPS client, local
-buffering, heartbeat, ADR-backed transport design, host tests) is
-substantially built. Battery voltage sensing (issue #2) is next.**
+Status: **paused (October 2026) — working prototype in personal use,
+tagged `v0.1.0`.** Development is deliberately on hold, not abandoned; the
+remaining work below is planned, not dropped.
+
+### What works (verified on real hardware)
+- AC/shore-power presence detection via GPIO, software-debounced
+- Runtime serial-console provisioning into NVS — no secrets in firmware
+  or in any file (see "Provisioning" below)
+- WiFi station mode with exponential-backoff reconnect; recovers from a
+  dropped AP with no manual intervention
+- Phone-home over HTTPS through Cloudflare Access to a Home Assistant
+  webhook ([ADR 0001](./docs/adr/0001-phone-home-transport.md)): immediate
+  out-of-cycle alert on AC loss, periodic heartbeat on an absolute-deadline
+  schedule, local buffering during outages with alerts drained ahead of
+  heartbeats
+- Brownout detector explicitly configured; OTA-ready dual-slot partition
+  table in place
+- CI: host-side unit tests plus a full ESP32 build on every push and PR
+
+### Remaining before an unattended field install
+SPEC.md treats these as hard requirements for a device with no guaranteed
+physical access. The current build is suitable for personal use where a
+hang would surface as a missing heartbeat, not yet for a hands-off
+deployment.
+- Battery voltage sensing via ADC (issue #2)
+- Task watchdog (issue #37)
+- Boot-loop protection with a minimal safe-mode fallback
+- OTA updates with self-validation and automatic rollback
 
 An ESP32-based monitor for a camper at a remote site: tracks house battery
 voltage and AC/shore-power presence, and reports status home. Built to run

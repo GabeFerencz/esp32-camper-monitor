@@ -170,17 +170,21 @@ firmware behavior.
   checkpoint (below) is solid.
 
 ## v1 "done" checkpoint
+Project paused at `v0.1.0` (October 2026) with the items below checked;
+the unchecked items are the remaining v1 scope, not dropped.
+
 - [ ] Battery voltage and AC-presence both read reliably on real hardware
-- [ ] Phone-home endpoint live on personal infrastructure, isolated from
+      (AC-presence verified; battery voltage pending issue #2)
+- [x] Phone-home endpoint live on personal infrastructure, isolated from
       other services on the same host (separate service, port, database)
-- [ ] Provisioning console tested end-to-end (enter WiFi/CF-token/host via
+- [x] Provisioning console tested end-to-end (enter WiFi/CF-token/host via
       `set-wifi`/`set-cf-token`/`set-host`, `commit`, confirm it reboots
       and reconnects using the provisioned values)
-- [ ] Confirmed no credential, hostname, or token appears in any tracked
+- [x] Confirmed no credential, hostname, or token appears in any tracked
       or untracked file in the repo
-- [ ] Status reported successfully to the endpoint over the private
+- [x] Status reported successfully to the endpoint over the private
       cellular WiFi, authenticated via Cloudflare Access service token
-- [ ] Survives a WiFi drop/reconnect with no manual intervention
+- [x] Survives a WiFi drop/reconnect with no manual intervention
 - [ ] OTA update pushed successfully; rollback deliberately tested (push a
       broken build, confirm auto-rollback recovers it) *before* first field
       install (confirm NVS-provisioned config also survives this test)
